@@ -102,6 +102,7 @@ function CountDownTimer() {
       setBreakCount(5);
       setSessionCount(25);
       setGetRemainingTime(defaultRemainingTime);
+      setTimeInMilliSeconds(25 * 1000 * 60);
       setTimerType("Session");
     }
 
