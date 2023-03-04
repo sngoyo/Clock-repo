@@ -1,112 +1,142 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {FormatTime} from "/home/salim/Documents/REACT_APPs/clock-app/src/components/leftTime.js";
+const beepSound = require("/home/salim/Documents/REACT_APPs/clock-app/src/beep_alarm.mp3");
+
 
 const defaultRemainingTime = {
-  minutes: "25",
-  seconds: "00"
+  minutes: 25,
+  seconds: 0
 }
 
 function CountDownTimer() {
-  const [breakCount, SetBreakCount] = useState(5);
-  const [sessionCount, SetSessionCount] = useState(25);
-  const [running, setRunning] = useState(false);
+  const [breakCount, setBreakCount] = useState(5);
+  const [sessionCount, setSessionCount] = useState(25);
+  const [isRunning, setIsRunning] = useState(true);
   const [getRemainingTime, setGetRemainingTime] = useState(defaultRemainingTime);
+  const [timerType, setTimerType] = useState("Session");
+  const [timeInMilliSeconds, setTimeInMilliSeconds] = useState(sessionCount * 1000 * 60);
+  const audioRef = useRef(null);
 
-  const timeInMilliSeconds = sessionCount * 1000 * 60;;
-  //get time a head in milliseconds;
-  const countDown = new Date().getTime() + timeInMilliSeconds
+  // Get time a head in Milliseconds
+  var  countDownSessionCount = new Date().getTime() + timeInMilliSeconds;
 
 
-  const SetBreakCountDecrement = () => {
+  const setBreakCountDecrement = () => {
     //decrementing value within break-length and ensuring breakCount state starts from 60 and not above it to avoid clicking without showing values
-     SetBreakCount((previousBreakCount) => (previousBreakCount > 60 ? 60 - 1 : previousBreakCount - 1));
-
+    if (!isRunning){
+    setBreakCount(breakCount > 60 ? 60 - 1 : breakCount - 1);
+    }
   }//
-  const SetBreakCountIncrement = () => {
+  const setBreakCountIncrement = () => {
     //incrementing value within break-length and ensuring breakCount state starts from 0 and not negative number to avoid Clicking without showing values
-     SetBreakCount((previousBreakCount) => (previousBreakCount < 1 ? 1 + 1 : previousBreakCount + 1));
-
+    if (!isRunning){
+    setBreakCount(breakCount < 1 ? 1 + 1 : breakCount + 1);
+    }
   }
 
-  const SetSessionCountDecrement = () => {
-     if(running){
-     SetSessionCount(sessionCount > 60 ? 60 - 1 : sessionCount - 1);
-     getRemainingTime.minutes = (sessionCount -1).toString();
-     getRemainingTime.seconds = "00";
+  const setSessionCountDecrement = () => {
+     if(!isRunning){
+     setSessionCount(sessionCount > 60 ? 60 - 1 : sessionCount - 1);
+     getRemainingTime.minutes = (sessionCount -1);
+     getRemainingTime.seconds = 0;
      }
     }
 
-  const SetSessionCountIncrement = () => {
-    if (running){
-    SetSessionCount(sessionCount < 1 ? 1 + 1 : sessionCount + 1);
-    getRemainingTime.minutes = (sessionCount+1).toString();
-    getRemainingTime.seconds = "00"
+  const setSessionCountIncrement = () => {
+    if (!isRunning){
+    setSessionCount(sessionCount < 1 ? 1 + 1 : sessionCount + 1);
+    getRemainingTime.minutes = (sessionCount + 1);
+    getRemainingTime.seconds = 0;
     }
-
   }
+
 
   useEffect(() => {
     var interval = null;
-    if (!running){
-    interval = setInterval(()=>{
-      updateRemainingTime(countDown)
-    }, 1000)
-   } else {
+    if (isRunning){
+      interval = setInterval(()=>{
+        updateRemainingTime(countDownSessionCount);
+      }, 1000)
+    } else {
         clearInterval(interval)
       }
     return () => clearInterval(interval);
-   }, [running]);
+   }, [isRunning, breakCount, sessionCount, timerType]);
 
-  const initiateTimer = () => {
-     if (!running) {
-       setRunning(true)
-     }else {
-       setRunning(false)
-
-     }
-  }
 
   function updateRemainingTime (countdowntime) {
-    setGetRemainingTime(FormatTime(countdowntime))
+    var remainingTimeUpdate = FormatTime(countdowntime);
+       setGetRemainingTime(remainingTimeUpdate);
+      if (remainingTimeUpdate.minutes === 0 && remainingTimeUpdate.seconds === 0){
+         audioRef.current.play();
+        if (timerType === "Session"){
+          setTimerType('Break')
+          setTimeInMilliSeconds(breakCount * 1000 * 60);
+        } else {
+          setTimerType("Session");
+          setTimeInMilliSeconds(sessionCount * 1000 * 60);
+        }
+    }
   };
 
+//console.log(getRemainingTime.minutes + " " + getRemainingTime.seconds);
+
+ //start-stop timer and reset
+ const handleStartStop = () => {
+   if (!isRunning && timerType === "Session"){
+     setIsRunning(true);
+     setTimeInMilliSeconds(sessionCount * 1000 * 60)
+   } else if (!isRunning && timerType === "Break"){
+     setIsRunning(true);
+     setTimeInMilliSeconds(breakCount * 1000 * 60)
+   } else {
+     setIsRunning(false)
+   }
+ }
+
+
   const handleReset = () => {
-    setRunning(false);
-    SetBreakCount(5);
-    SetSessionCount(25);
-    setGetRemainingTime(defaultRemainingTime);
+    if (isRunning){
+      setIsRunning(false)
+      setBreakCount(5);
+      setSessionCount(25);
+      setGetRemainingTime(defaultRemainingTime);
+      setTimerType("Session");
+    }
 
   }
 
     return (
       <div>
-
         <h1>25 + 5 Clock</h1>
       <div className="break-session-container">
+      <audio id="beep" ref={audioRef} volume={1}
+      src={beepSound}  type="audio/mpeg">
+        </audio>
       <div className="break-div">
         <h2 id="break-label">Break Length</h2>
         <div className="small-break-div">
-        <span id="break-decrement" ><i className="fa-solid fa-arrow-down" onClick={SetBreakCountDecrement}></i></span>
+        <span id="break-decrement" ><i className="fa-solid fa-arrow-down" onClick={setBreakCountDecrement}></i></span>
         <div id="break-length">{breakCount < 1 ? 1 : breakCount > 60 ? 60 : breakCount}</div>
-        <span id="break-increment"><i className="fa-solid fa-arrow-up" onClick={SetBreakCountIncrement}></i></span>
-        </div>
+        <span id="break-increment"><i className="fa-solid fa-arrow-up" onClick={setBreakCountIncrement}></i></span>
+      </div>
       </div>
       <div className="session-div">
         <h2 id="session-label">Session Length</h2>
         <div className="small-session-div">
-        <span id="session-decrement"><i className="fa-solid fa-arrow-down" onClick={SetSessionCountDecrement}></i></span>
+        <span id="session-decrement"><i className="fa-solid fa-arrow-down" onClick={setSessionCountDecrement}></i></span>
         <div id="session-length">{sessionCount < 1 ? 1 : sessionCount > 60 ? 60 : sessionCount}</div>
-        <span id="session-increment"><i className="fa-solid fa-arrow-up" onClick={SetSessionCountIncrement}></i></span>
+        <span id="session-increment"><i className="fa-solid fa-arrow-up" onClick={setSessionCountIncrement}></i></span>
         </div>
       </div>
       </div>
       <div className="timer">
-        <h2 id="timer-label">Break</h2>
-        <h3 id="time-left"><span>{getRemainingTime.minutes}:</span><span>{getRemainingTime.seconds}</span></h3>
+        <h2 id="timer-label">{timerType}</h2>
+        <h3 id="time-left"><span>{getRemainingTime.minutes < 10 ? "0" + getRemainingTime.minutes : getRemainingTime.minutes}:</span><span>{getRemainingTime.seconds < 10 ? "0" + getRemainingTime.seconds : getRemainingTime.seconds}</span></h3>
       </div>
       <div className="control-buttons">
-        <span id="start-stop" onClick={initiateTimer}><span className="material-symbols-outlined">
+        <span id="start-stop" name="controlButton" onClick={handleStartStop}><span className="material-symbols-outlined">
 play_pause
 </span></span>
         <span id="reset" onClick={handleReset}><span className="material-symbols-outlined">
