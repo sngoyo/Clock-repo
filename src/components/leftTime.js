@@ -15,14 +15,15 @@ export function FormatTime(time) {
 
 function getRemainingSeconds(nowdayjs, userdayjs) {
     let remainingSeconds = userdayjs.diff(nowdayjs, 'seconds') % 60;
-    let formatedSeconds = remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds;
-    return formatedSeconds.toString();
+    // let formatedSeconds = remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds;
+    return remainingSeconds;
+
 }
 
 
 function getRemainingMinutes(nowdayjs, userdayjs) {
     let remainingMinutes = userdayjs.diff(nowdayjs, 'minutes') % 60;
-    let formatedMinutes = remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes;
+    //let formatedMinutes = remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes;
+    return remainingMinutes;
 
-    return formatedMinutes.toString();
 }
