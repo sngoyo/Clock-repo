@@ -20,7 +20,7 @@ body {
 
 .break-div {
     text-align: center;
-    width: 30rem;
+    width: 20rem;
 }
 
 .small-break-div {
@@ -37,6 +37,7 @@ span {
 .session-div {
     text-align: center;
     width: 30rem;
+    padding-left: 5em;
 }
 
 .small-session-div {
@@ -51,7 +52,7 @@ h3 {
 }
 
 h1 {
-    font-size: 4em;
+    font-size: 3em;
 }
 
 h3 {
@@ -64,21 +65,30 @@ h2 {
     padding-bottom: -5px;
 }
 
-.time-left {
-    text-align: center;
-    width: 10rem;
-    height: 10rem;
-    align-items: center;
+#time-left {
+    margin-top: -4px;
 }
 
-.control-buttons {
-    margin: auto;
+.time {
+    font-size: 8rem;
+    margin-top: 5px;
+    font-family: "Lucida Console", Sans-serif;
+}
+
+.title {
+    margin-top: -10px;
+    color: rgb(161, 25, 25);
+    text-align: center;
+}
+
+.designer {
+    color: #050638;
+    margin-top: -6px;
     text-align: center;
 }
 
 .break-session-container {
     display: flex;
-    gap: 15px;
     justify-content: center;
 }
 
@@ -88,21 +98,33 @@ span {
 
 .timer {
     border: 8px solid grey;
-    border-radius: 50px;
-    width: 35rem;
-    height: 16rem;
+    border-radius: 60px;
+    width: 29rem;
+    height: 20rem;
     margin: auto;
     margin-top: 3rem;
 }
 
 #timer-label {
-    margin-top: 7px;
-    padding-bottom: -2px;
+    margin-top: 30px;
+    padding-bottom: -10px;
+    font-size: 2.5em;
+}
+
+.control-buttons {
+    margin: auto;
+    width: 7em;
+    align-items: center;
+    display: flex;
 }
 
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' 0, 'opsz' 24;
     font-size: 2em;
+}
+
+#reset .material-symbols-outlined {
+    font-size: 1.2em;
 }
 
 #break-length,
