@@ -1,4 +1,5 @@
 import React from "react";
+
 import { useState, useEffect, useRef } from "react";
 import {FormatTime} from "/home/salim/Documents/REACT_APPs/clock-app/src/components/leftTime.js";
 const beepSound = require("/home/salim/Documents/REACT_APPs/clock-app/src/beep_alarm.mp3");
@@ -17,50 +18,62 @@ function CountDownTimer() {
   const [timerType, setTimerType] = useState("Session");
   const [timeInMilliSeconds, setTimeInMilliSeconds] = useState(sessionCount * 1000 * 60);
   const audioRef = useRef(null);
+  const [timeColor, setTimeColor] = useState("false");
+
+
 
   // Get time a head in Milliseconds
   var  countDownSessionCount = new Date().getTime() + timeInMilliSeconds;
 
 
   const setBreakCountDecrement = () => {
-    //decrementing value within break-length and ensuring breakCount state starts from 60 and not above it to avoid clicking without showing values
     if (!isRunning){
-    setBreakCount(breakCount > 60 ? 60 - 1 : breakCount - 1);
+       ///To prevent break length from having value below 1
+      if (breakCount > 1){
+    setBreakCount((prev)=> prev - 1);
+     }
     }
-  }//
+  }
+
   const setBreakCountIncrement = () => {
-    //incrementing value within break-length and ensuring breakCount state starts from 0 and not negative number to avoid Clicking without showing values
-    if (!isRunning){
-    setBreakCount(breakCount < 1 ? 1 + 1 : breakCount + 1);
+    if (!isRunning ){
+      if(breakCount < 60){
+        //To prevent break length from having value more than 60
+    setBreakCount((prev) => prev + 1);
+      }
     }
   }
 
   const setSessionCountDecrement = () => {
      if(!isRunning){
-     setSessionCount(sessionCount > 60 ? 60 - 1 : sessionCount - 1);
-     getRemainingTime.minutes = (sessionCount -1);
-     getRemainingTime.seconds = 0;
+       //The condition below is to prevent session length from having value below 1
+       if(sessionCount > 1 ){
+       setSessionCount((prev) => prev - 1);
      }
-    }
-
-  const setSessionCountIncrement = () => {
-    if (!isRunning){
-    setSessionCount(sessionCount < 1 ? 1 + 1 : sessionCount + 1);
-    getRemainingTime.minutes = (sessionCount + 1);
-    getRemainingTime.seconds = 0;
     }
   }
 
+  const setSessionCountIncrement = () => {
+    if (!isRunning){
+        //To prevent session length from having value more than 60
+      if(sessionCount < 60 ){
+    setSessionCount((prev) => prev + 1);
+    }
+  }
+}
 
+
+//This useEffect hook Count down the milliseconds that is passed
+ //to the function updateRemainingTime andreturn minutes and seconds
   useEffect(() => {
     var interval = null;
-    if (isRunning){
+   if (isRunning){
       interval = setInterval(()=>{
         updateRemainingTime(countDownSessionCount);
       }, 1000)
     } else {
-        clearInterval(interval)
-      }
+       clearInterval(interval)
+    }
     return () => clearInterval(interval);
    }, [isRunning, breakCount, sessionCount, timerType]);
 
@@ -70,30 +83,42 @@ function CountDownTimer() {
        setGetRemainingTime(remainingTimeUpdate);
       if (remainingTimeUpdate.minutes === 0 && remainingTimeUpdate.seconds === 0){
          audioRef.current.play();
+         setTimeColor("false");
         if (timerType === "Session"){
-          setTimerType('Break')
+          setTimerType('Break');
           setTimeInMilliSeconds(breakCount * 1000 * 60);
         } else {
           setTimerType("Session");
           setTimeInMilliSeconds(sessionCount * 1000 * 60);
         }
+     }
+     if (remainingTimeUpdate.minutes === 1 && remainingTimeUpdate.seconds === 0){
+      if (timeColor === "false"){
+        setTimeColor("true");
+      }
     }
   };
 
-//console.log(getRemainingTime.minutes + " " + getRemainingTime.seconds);
+  //UseEffect hook to update  the time when decrementing/incrementing session/break length
+  useEffect(() => {
+    if (!isRunning){
+      setTimeInMilliSeconds(sessionCount * 1000 * 60);
+      setGetRemainingTime({
+        minutes: sessionCount > 60? 60 : sessionCount,
+        seconds: 0
+      });
+    }
+  }, [sessionCount]);
 
- //start-stop timer and reset
+
+ //start-stop timer
  const handleStartStop = () => {
-   if (!isRunning && timerType === "Session"){
-     setIsRunning(true);
-     setTimeInMilliSeconds(sessionCount * 1000 * 60)
-   } else if (!isRunning && timerType === "Break"){
-     setIsRunning(true);
-     setTimeInMilliSeconds(breakCount * 1000 * 60)
-   } else {
-     setIsRunning(false)
-   }
- }
+    if(isRunning){
+      setIsRunning(false)
+    } else {
+      setIsRunning(true)
+    }
+ };
 
 
   const handleReset = () => {
@@ -101,11 +126,13 @@ function CountDownTimer() {
       setIsRunning(false)
       setBreakCount(5);
       setSessionCount(25);
-      setGetRemainingTime(defaultRemainingTime);
-      setTimeInMilliSeconds(25 * 1000 * 60);
+      setGetRemainingTime({
+        minutes: 25,
+        seconds: 0
+      });
       setTimerType("Session");
+     setTimeInMilliSeconds(defaultRemainingTime.minutes * 1000 * 60);
     }
-
   }
 
     return (
@@ -133,18 +160,24 @@ function CountDownTimer() {
       </div>
       </div>
       <div className="timer">
-        <h2 id="timer-label">{timerType}</h2>
-        <h3 id="time-left"><span>{getRemainingTime.minutes < 10 ? "0" + getRemainingTime.minutes : getRemainingTime.minutes}:</span><span>{getRemainingTime.seconds < 10 ? "0" + getRemainingTime.seconds : getRemainingTime.seconds}</span></h3>
+        <h2 id="timer-label" style= { timeColor === "true" ? {color:"rgb(190, 19, 17)"} : {}}>{timerType}</h2>
+        <h3 id="time-left"><span className="time" style= { timeColor === "true" ? {color:"rgb(190, 19, 17)"} : {}}>{getRemainingTime.minutes < 10 ? "0" + getRemainingTime.minutes : getRemainingTime.minutes}:</span>
+        <span className="time" style= { timeColor === "true" ? {color: "rgb(190, 19, 17)" } : {}}>{getRemainingTime.seconds < 10 ? "0" + getRemainingTime.seconds : getRemainingTime.seconds}</span></h3>
       </div>
       <div className="control-buttons">
-        <span id="start-stop" name="controlButton" onClick={handleStartStop}><span className="material-symbols-outlined">
-play_pause
-</span></span>
-        <span id="reset" onClick={handleReset}><span className="material-symbols-outlined">
-cached
-</span></span>
+        <span id="start-stop" name="controlButton" onClick={handleStartStop}>
+          <span className="material-symbols-outlined">
+          play_pause
+          </span>
+       </span>
+        <span id="reset" onClick={handleReset}>
+          <span className="material-symbols-outlined">cached
+          </span>
+        </span>
 
       </div>
+         <p className="title"> Coded by </p>
+         <p className="designer"> Salim Ngoyo </p>
       </div>
 
     );
