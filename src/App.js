@@ -7,7 +7,7 @@ function App() {
 
   return (
     <div className="App">
-     <CountDownTimer time={parseInt(25)}/>
+     <CountDownTimer/>
 
     </div>
   );
