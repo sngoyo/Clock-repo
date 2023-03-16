@@ -18,9 +18,7 @@ function CountDownTimer() {
   const [timerType, setTimerType] = useState("Session");
   const [timeInMilliSeconds, setTimeInMilliSeconds] = useState(sessionCount * 1000 * 60);
   const audioRef = useRef(null);
-  const [timeColor, setTimeColor] = useState("false");
-
-
+  const [timeColor, setTimeColor] = useState(false);
 
   // Get time a head in Milliseconds
   var  countDownSessionCount = new Date().getTime() + timeInMilliSeconds;
@@ -67,15 +65,16 @@ function CountDownTimer() {
  //to the function updateRemainingTime andreturn minutes and seconds
   useEffect(() => {
     var interval = null;
-   if (isRunning){
+    if (isRunning){
       interval = setInterval(()=>{
         updateRemainingTime(countDownSessionCount);
-      }, 1000)
-    } else {
-       clearInterval(interval)
+      }, 10)
     }
+   else {
+     clearInterval(interval)
+   }
     return () => clearInterval(interval);
-   }, [isRunning, breakCount, sessionCount, timerType]);
+   }, [isRunning, breakCount, sessionCount, timerType, timeInMilliSeconds]);
 
 
   function updateRemainingTime (countdowntime) {
@@ -83,7 +82,7 @@ function CountDownTimer() {
        setGetRemainingTime(remainingTimeUpdate);
       if (remainingTimeUpdate.minutes === 0 && remainingTimeUpdate.seconds === 0){
          audioRef.current.play();
-         setTimeColor("false");
+        setTimeColor(false);
         if (timerType === "Session"){
           setTimerType('Break');
           setTimeInMilliSeconds(breakCount * 1000 * 60);
@@ -93,9 +92,7 @@ function CountDownTimer() {
         }
      }
      if (remainingTimeUpdate.minutes === 1 && remainingTimeUpdate.seconds === 0){
-      if (timeColor === "false"){
-        setTimeColor("true");
-      }
+        setTimeColor(true);
     }
   };
 
@@ -111,11 +108,13 @@ function CountDownTimer() {
   }, [sessionCount]);
 
 
- //start-stop timer
+ //start-stop timer(pause and resume timer)
  const handleStartStop = () => {
     if(isRunning){
-      setIsRunning(false)
+     setIsRunning(false)
     } else {
+      let newTimeinMilliSeconds = (getRemainingTime.minutes * 60 * 1000) + (getRemainingTime.seconds * 1000);
+      setTimeInMilliSeconds(newTimeinMilliSeconds);
       setIsRunning(true)
     }
  };
@@ -131,7 +130,10 @@ function CountDownTimer() {
         seconds: 0
       });
       setTimerType("Session");
-     setTimeInMilliSeconds(defaultRemainingTime.minutes * 1000 * 60);
+     setTimeInMilliSeconds(25 * 1000 * 60);
+     setTimeColor(false);
+     audioRef.current.pause();
+     audioRef.current.currentTime = 0;
     }
   }
 
@@ -145,7 +147,7 @@ function CountDownTimer() {
       <div className="break-div">
         <h2 id="break-label">Break Length</h2>
         <div className="small-break-div">
-        <span id="break-decrement" ><i className="fa-solid fa-arrow-down" onClick={setBreakCountDecrement}></i></span>
+        <span id="break-decrement"><i className="fa-solid fa-arrow-down" onClick={setBreakCountDecrement}></i></span>
         <div id="break-length">{breakCount < 1 ? 1 : breakCount > 60 ? 60 : breakCount}</div>
         <span id="break-increment"><i className="fa-solid fa-arrow-up" onClick={setBreakCountIncrement}></i></span>
       </div>
@@ -160,12 +162,12 @@ function CountDownTimer() {
       </div>
       </div>
       <div className="timer">
-        <h2 id="timer-label" style= { timeColor === "true" ? {color:"rgb(190, 19, 17)"} : {}}>{timerType}</h2>
-        <h3 id="time-left"><span className="time" style= { timeColor === "true" ? {color:"rgb(190, 19, 17)"} : {}}>{getRemainingTime.minutes < 10 ? "0" + getRemainingTime.minutes : getRemainingTime.minutes}:</span>
-        <span className="time" style= { timeColor === "true" ? {color: "rgb(190, 19, 17)" } : {}}>{getRemainingTime.seconds < 10 ? "0" + getRemainingTime.seconds : getRemainingTime.seconds}</span></h3>
+        <h2 id="timer-label" style={timeColor === true ? {color:"rgb(190, 19, 17)"} : {}}>{timerType}</h2>
+        <h3 id="time-left"><span className="time" style= { timeColor === true ? {color:"rgb(190, 19, 17)"} : {}}>{getRemainingTime.minutes < 10 ? "0" + getRemainingTime.minutes : getRemainingTime.minutes}:</span>
+        <span className="time" style= { timeColor === true ? {color: "rgb(190, 19, 17)" } : {}}>{getRemainingTime.seconds < 10 ? "0" + getRemainingTime.seconds : getRemainingTime.seconds}</span></h3>
       </div>
       <div className="control-buttons">
-        <span id="start-stop" name="controlButton" onClick={handleStartStop}>
+        <span id="start_stop" onClick={handleStartStop}>
           <span className="material-symbols-outlined">
           play_pause
           </span>
